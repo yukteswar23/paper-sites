@@ -1220,7 +1220,20 @@ function fromOpenAlex(w) {
     abstract: unInvert(w.abstract_inverted_index),
   };
 }
-const idLookupUrl = info => OA + '/doi:' + (info.arxiv ? '10.48550/arXiv.' + info.arxiv : info.doi) + '?select=' + OA_FIELDS;
+/* optional personal API key: kept in this browser only, never in the page source */
+const OA_KEY = 'paperstacks.openalexKey';
+const oaKey = () => { try { return localStorage.getItem(OA_KEY) || ''; } catch (e) { return ''; } };
+const withKey = u => oaKey() ? u + (u.includes('?') ? '&' : '?') + 'api_key=' + encodeURIComponent(oaKey()) : u;
+function openKeyForm() {
+  showModal(`<form class="sheet narrow" id="kform" novalidate>
+    <h3>Search API key</h3>
+    <p class="sub">Paper search uses OpenAlex. Without a key, everyone on your network shares about 100 searches a day; a free personal key raises that to about 1,000. The key is stored in this browser only.</p>
+    <div class="f"><label for="k-val">OpenAlex API key</label><input id="k-val" type="text" autocomplete="off" spellcheck="false" value="${esc(oaKey())}" placeholder="Paste your key"><span class="note">Get one free at openalex.org/settings/api. Leave empty to remove it.</span></div>
+    <div class="formacts"><button type="button" class="btn" data-close="1">Cancel</button><button type="submit" class="btn primary">Save key</button></div>
+  </form>`, 'key');
+  setTimeout(() => $('#k-val').focus(), 30);
+}
+const idLookupUrl = info => withKey(OA + '/doi:' + (info.arxiv ? '10.48550/arXiv.' + info.arxiv : info.doi) + '?select=' + OA_FIELDS);
 const foundKey = x => x.arxiv ? 'ax:' + x.arxiv.toLowerCase() : x.doi ? 'doi:' + x.doi.toLowerCase() : 'u:' + x.url;
 const findSaved = x => state.papers.find(p => (x.arxiv && String(p.arxiv || '').toLowerCase() === x.arxiv.toLowerCase()) || (x.doi && String(p.doi || '').toLowerCase() === x.doi.toLowerCase()) || (x.url && p.url === x.url));
 function finderUrl(f) {
@@ -1232,7 +1245,7 @@ function finderUrl(f) {
   if (f.src === 'arxiv') filters.push('locations.source.id:' + OA_ARXIV);
   if (filters.length) p.set('filter', filters.join(','));
   if (f.sort === 'new') p.set('sort', 'publication_date:desc');
-  return OA + '?' + p;
+  return withKey(OA + '?' + p);
 }
 async function runFind(more) {
   const f = finder; if (!f.q.trim()) return;
@@ -1254,7 +1267,10 @@ async function runFind(more) {
   } catch (e) {
     if (seq !== f.seq) return;
     if (more) f.page--;
-    f.err = e && e.status === 429 ? 'The search service’s free daily limit is used up for your network. Try again later, or add the paper by hand.' : 'Couldn’t reach the search service. Check your connection and try again.';
+    const st = e && e.status;
+    f.err = st === 429 ? (oaKey() ? 'Your search key’s daily limit is used up. It resets tomorrow; meanwhile you can add papers by hand.' : 'The free daily search limit for your network is used up. Add a personal key from the ⋯ menu (Search API key) for more, or add the paper by hand.')
+      : (st === 401 || st === 403) && oaKey() ? 'The search service rejected your API key. Check it under ⋯ › Search API key.'
+      : 'Couldn’t reach the search service. Check your connection and try again.';
   }
   f.busy = false; renderFinder();
 }
@@ -1386,6 +1402,7 @@ function renderMenu() {
     <button data-m="csv">Export as spreadsheet (CSV)</button>
     <button data-m="bib">Export BibTeX</button>
     <hr><button data-m="import">Import from JSON…</button>
+    <button data-m="key">Search API key${oaKey() ? ' ✓' : '…'}</button>
     ${state.papers.some(p => p.example) ? '<hr><button data-m="examples">Remove example entries</button>' : ''}
     <hr><button data-m="theme">Switch to ${isDark() ? 'light' : 'dark'} theme</button>`;
 }
@@ -1440,6 +1457,7 @@ $('#menu').addEventListener('click', e => {
   if (m === 'json') exportJSON(); else if (m === 'csv') exportCSV(); else if (m === 'bib') exportBib();
   else if (m === 'import') $('#importfile').click(); else if (m === 'examples') removeExamples();
   else if (m === 'newlist') openListForm();
+  else if (m === 'key') openKeyForm();
   else if (m === 'theme') document.documentElement.dataset.theme = isDark() ? 'light' : 'dark';
 });
 $('#importfile').addEventListener('change', e => { const f = e.target.files[0]; if (f) importFile(f); e.target.value = ''; });
@@ -1520,6 +1538,11 @@ $('#modal').addEventListener('keydown', e => {
 });
 $('#modal').addEventListener('submit', e => {
   if (e.target.id === 'pform') return submitForm(e);
+  if (e.target.id === 'kform') {
+    e.preventDefault(); const v = $('#k-val').value.trim();
+    try { if (v) localStorage.setItem(OA_KEY, v); else localStorage.removeItem(OA_KEY); } catch (err) { return toast('This browser won’t store the key. Check that site storage is allowed.'); }
+    closeModal(); return toast(v ? 'Search key saved in this browser' : 'Search key removed');
+  }
   if (e.target.id === 'fx-form') { e.preventDefault(); finder.q = $('#fx-q').value; return runFind(); }
   if (e.target.id === 'fx-newlist') {
     e.preventDefault(); const name = $('#fx-newlist-name').value.trim(); if (!name) return $('#fx-newlist-name').focus();
