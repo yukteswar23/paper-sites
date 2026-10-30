@@ -326,6 +326,34 @@ textarea.notes:focus{border-color:var(--accent)}
 .pp .st{font-size:12.5px;font-weight:600;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:3px 10px;flex:none}
 .pp[aria-pressed="true"] .st{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
 
+/* find papers online */
+.sheet.wide{width:min(820px,100%)}
+.fxbar{display:flex;gap:8px}
+.fxbar .search{flex:1}
+.fxopts,.fxsave{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;margin-top:12px}
+.fxopts .sel{height:34px;font-size:13px}
+.fxsave{padding:10px 12px;border-radius:10px;background:var(--sunk)}
+.fxsave label{font-size:12.5px;font-weight:600;color:var(--muted)}
+.fxsave .sel{height:34px;max-width:100%;min-width:0;flex:0 1 260px}
+.fxsave .inline-new{margin:0;flex:1 1 220px}
+.fxres{display:flex;flex-direction:column;gap:8px;margin-top:14px;min-height:80px}
+.fxcount{font-family:var(--f-mono);font-size:12px;color:var(--muted);margin:0 2px}
+.fxhint{color:var(--muted);font-size:14px;margin:10px 2px}
+.fxhint button{border:0;background:none;color:var(--accent);font-weight:600;padding:0}
+.fxr{display:flex;gap:14px;align-items:flex-start;border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--surface)}
+.fxr.saved{border-color:color-mix(in srgb,var(--done) 40%,var(--line))}
+.fxr-main{flex:1;min-width:0}
+.fxr-t{margin:2px 0 0;font-family:var(--f-display);font-weight:600;font-size:17px;line-height:1.3;text-wrap:balance}
+.fxr-t a{color:var(--ink);text-decoration:none}
+.fxr-t a:hover{color:var(--accent);text-decoration:underline}
+.fxabs{margin:6px 0 0;font-size:13.5px;color:var(--muted);display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;cursor:pointer;border:0;background:none;padding:0;text-align:left;width:100%}
+.fxabs.open{display:block;-webkit-line-clamp:unset}
+.fxr-acts{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex:none}
+.fxr-acts .row2{display:flex;gap:6px;align-items:center}
+.fxsaved{font-size:12.5px;font-weight:600;color:var(--done);white-space:nowrap}
+.fxsaved.muted{color:var(--muted);font-weight:500}
+.dabs{margin:0;font-size:14px;line-height:1.6;color:var(--ink)}
+
 /* toast & drop */
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translate(-50%,160%);z-index:60;background:var(--ink);color:var(--bg);padding:10px 12px 10px 16px;border-radius:12px;display:flex;gap:14px;align-items:center;box-shadow:var(--shadow);transition:transform .25s ease;max-width:calc(100% - 32px);font-size:14px}
 .toast.on{transform:translate(-50%,0)}
@@ -357,6 +385,8 @@ textarea.notes:focus{border-color:var(--accent)}
   .list.covers{grid-template-columns:repeat(2,minmax(0,1fr));gap:22px 14px}
   .dcover{grid-template-columns:84px minmax(0,1fr)}
   .lgrid{grid-template-columns:minmax(0,1fr)}
+  .fxr{flex-direction:column;gap:10px}
+  .fxr-acts{flex-direction:row;align-items:center;flex-wrap:wrap}
 }
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style>
@@ -420,11 +450,12 @@ textarea.notes:focus{border-color:var(--accent)}
           <button class="btn" id="more" aria-haspopup="true" aria-expanded="false" aria-label="More actions"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></button>
           <div class="menu" id="menu" hidden></div>
         </div>
+        <button class="btn" id="find" title="Search arXiv and save results to a list (F)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><span class="lbl-long">Find on arXiv</span><kbd>F</kbd></button>
         <button class="btn primary" id="add"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg><span class="lbl-long">Add paper</span><kbd>N</kbd></button>
       </div>
       <div id="head"></div>
       <div class="list" id="list" aria-live="polite"></div>
-      <div class="hint"><span><kbd>J</kbd> <kbd>K</kbd> move</span><span><kbd>Enter</kbd> open</span><span><kbd>S</kbd> star</span><span><kbd>W</kbd> want to read</span><span><kbd>D</kbd> completed</span><span><kbd>L</kbd> add to list</span><span>Drag a cover onto a list to file it</span></div>
+      <div class="hint"><span><kbd>J</kbd> <kbd>K</kbd> move</span><span><kbd>Enter</kbd> open</span><span><kbd>F</kbd> find on arXiv</span><span><kbd>S</kbd> star</span><span><kbd>W</kbd> want to read</span><span><kbd>D</kbd> completed</span><span><kbd>L</kbd> add to list</span><span>Drag a cover onto a list to file it</span></div>
     </main>
   </div>
 </div>
@@ -770,7 +801,7 @@ function renderRail() {
   else m.innerHTML = '';
 }
 const EMPTY = {
-  all: ['Your library is empty', 'Paste an arXiv link, DOI or any URL, or press N to add your first paper.'],
+  all: ['Your library is empty', 'Search arXiv (F), paste an arXiv link, DOI or any URL, or press N to add your first paper by hand.'],
   starred: ['Nothing starred yet', 'Tap the star on a paper to mark it as important.'],
   want: ['Your reading list is clear', 'Mark papers as “Want to read” to queue them up here.'],
   done: ['No completed papers yet', 'Mark a paper as “Completed” when you finish it and it lands here.'],
@@ -810,7 +841,7 @@ function renderShelf(head, el) {
   if (!list.length) {
     const filtered = state.tag || state.q.trim();
     const [h, p] = filtered ? ['No matches', 'Try a different search or clear the filters.'] : EMPTY[state.shelf] || EMPTY.all;
-    el.innerHTML = emptyBox(h, p, filtered ? '<button class="btn small" data-clear="all">Clear filters</button>' : (state.shelf === 'all' ? '<button class="btn primary small" data-act="add">Add a paper</button>' : ''));
+    el.innerHTML = emptyBox(h, p, filtered ? '<button class="btn small" data-clear="all">Clear filters</button>' : (state.shelf === 'all' ? '<button class="btn primary small" data-findfor="">Find on arXiv</button> <button class="btn small" data-act="add">Add by hand</button>' : ''));
     return;
   }
   el.innerHTML = list.map(state.view === 'covers' ? coverHTML : rowHTML).join('');
@@ -852,6 +883,7 @@ function renderListPage(head, el) {
     <div class="lbar" title="${pct}% completed"><i style="width:${pct}%"></i></div>
     <div class="lacts">
       <button class="btn small primary" data-pickfor="${esc(l.id)}">${ICON.plus} Add papers</button>
+      <button class="btn small" data-findfor="${esc(l.id)}">Find on arXiv</button>
       ${!l.parent ? `<button class="btn small" data-newlist="${esc(l.id)}">${ICON.plus} New sub-list</button>` : ''}
       <button class="btn small" data-editlist="${esc(l.id)}">Edit list</button>
       <button class="btn small danger" data-dellist="${esc(l.id)}">Delete list</button>
@@ -860,7 +892,7 @@ function renderListPage(head, el) {
   </div>`;
   el.className = 'sections';
   if (!all.length && !kids.length) {
-    el.innerHTML = emptyBox('This list is empty', 'Add papers from your library, drag covers onto the list in the sidebar, or use the list button under any cover.', `<button class="btn primary small" data-pickfor="${esc(l.id)}">Add papers</button>`);
+    el.innerHTML = emptyBox('This list is empty', 'Search arXiv and save papers straight here, add papers from your library, or drag covers onto the list in the sidebar.', `<button class="btn primary small" data-findfor="${esc(l.id)}">Find on arXiv</button> <button class="btn small" data-pickfor="${esc(l.id)}">Add from library</button>`);
     return;
   }
   const sections = [];
@@ -901,6 +933,7 @@ function renderDrawer(force) {
         ${link ? `<a class="btn small" href="${esc(link)}" target="_blank" rel="noopener noreferrer">${ICON.open} Open ${p.arxiv ? 'abstract' : 'link'}</a>` : ''}
         ${pdf ? `<a class="btn small" href="${esc(pdf)}" target="_blank" rel="noopener noreferrer">${ICON.pdf} PDF</a>` : ''}
       </div>
+      ${p.abstract ? `<div class="sect"><h4>Abstract</h4><p class="dabs">${esc(p.abstract)}</p></div>` : ''}
       <div class="sect"><h4>Lists<span>Tap to add or remove</span></h4><div class="pickchips" id="dlists">${listChipsHTML(p.lists || [])}</div>
         <form class="inline-new" id="dnewlist" hidden><input id="dnewlist-name" type="text" placeholder="New list name" aria-label="New list name"><button class="btn small primary" type="submit">Create</button></form></div>
       ${(p.tags || []).length ? `<div class="sect"><h4>Tags</h4><div class="tags" style="margin:0">${p.tags.map(t => `<button class="chip" data-dtag="${esc(t)}">#${esc(t)}</button>`).join('')}</div></div>` : ''}
@@ -1093,6 +1126,21 @@ function applyDetect(v, fill) {
   if (info.pdf && !$('#f-pdf').value) $('#f-pdf').value = info.pdf;
   if (info.year && !$('#f-year').value) $('#f-year').value = info.year;
   if (info.kind) { form.kind = info.kind; $$('#f-kind button').forEach(b => b.setAttribute('aria-pressed', b.dataset.kind === form.kind)); }
+  const key = info.arxiv || info.doi;
+  if (key && !form.id && form.metaKey !== key) autofill(info, key);
+}
+async function autofill(info, key) {
+  form.metaKey = key; form.abstract = ''; const det = $('#f-detect');
+  det.textContent = '✓ ' + info.note + ' · looking up title and authors…';
+  const stale = () => !form || form.metaKey !== key || modalKind !== 'paper';
+  try {
+    const r = await fetch(idLookupUrl(info)); if (!r.ok) throw r;
+    const x = fromOpenAlex(await r.json()); if (stale()) return;
+    const fill = (sel, v) => { const el = $(sel); if (el && v && !el.value.trim()) el.value = v; };
+    fill('#f-title', x.title); fill('#f-authors', x.authors.join(', ')); fill('#f-venue', x.venue); fill('#f-year', x.year); fill('#f-pdf', x.pdf);
+    form.abstract = x.abstract;
+    det.textContent = '✓ ' + info.note + ' · title and authors filled in';
+  } catch (e) { if (!stale()) det.textContent = '✓ ' + info.note + ' · couldn’t look up details, so add the title yourself'; }
 }
 function renderTagbox() {
   $('#tagbox').innerHTML = form.tags.map(t => `<button type="button" class="chip" data-rm="${esc(t)}" title="Remove tag">#${esc(t)} ✕</button>`).join('') + `<input id="f-tag" type="text" placeholder="${form.tags.length ? '' : 'Type and press Enter'}" autocomplete="off">`;
@@ -1122,12 +1170,14 @@ function submitForm(e) {
   };
   if (form.id) {
     const old = state.papers.find(p => p.id === form.id) || {};
+    if (old.abstract) data.abstract = old.abstract;
     data.addedAt = old.addedAt || Date.now();
     data.readAt = data.status === 'done' ? (old.status === 'done' ? old.readAt : Date.now()) : null;
     if (old.example) data.example = true;
     const id = form.id; closeModal(); Store.set(id, data); toast('Saved');
   } else {
     if (data.url && state.papers.some(p => p.url === data.url)) return err('This link is already in your stacks.');
+    if (form.abstract && form.metaKey && form.metaKey === (info.arxiv || info.doi)) data.abstract = form.abstract;
     data.addedAt = Date.now(); data.readAt = data.status === 'done' ? Date.now() : null;
     const id = newId('p'); closeModal();
     if (state.q || (state.tag && !data.tags.includes(state.tag))) { state.q = ''; $('#q').value = ''; state.tag = null; }
@@ -1135,6 +1185,155 @@ function submitForm(e) {
     state.fx = { id, act: 'new' }; Store.set(id, data);
     toast('Added to your stacks', 'Open', () => openDrawer(id));
   }
+}
+
+/* ---------- find papers online ----------
+   arXiv's own API sends no CORS headers, so browsers can't call it from this page.
+   OpenAlex indexes every arXiv paper (source S4306400194) and allows cross-origin requests. */
+const OA = 'https://api.openalex.org/works';
+const OA_ARXIV = 'S4306400194';
+const OA_FIELDS = 'id,display_name,publication_year,authorships,doi,primary_location,locations,abstract_inverted_index,type';
+const finder = { q: '', field: 'all', src: 'arxiv', sort: 'rel', page: 1, results: [], total: 0, busy: false, done: false, err: '', target: '', status: 'want', seq: 0, newlist: false };
+function arxivIdOf(w) {
+  for (const l of [w.primary_location, ...(w.locations || [])]) { const m = String(l && l.landing_page_url || '').match(/arxiv\.org\/abs\/(.+?)(v\d+)?$/i); if (m) return m[1]; }
+  const m = String(w.doi || '').match(/10\.48550\/arxiv\.(.+)$/i); return m ? m[1] : '';
+}
+function arxivYear(id) {
+  const m = String(id).match(/^(\d{2})\d{2}\.\d{4,5}$/) || String(id).match(/\/(\d{2})\d{5}$/); if (!m) return null;
+  const y = +m[1]; return id.includes('/') && y >= 91 ? 1900 + y : 2000 + y;
+}
+function unInvert(ii) { if (!ii) return ''; const w = []; for (const [k, ps] of Object.entries(ii)) ps.forEach(i => { w[i] = k; }); return w.filter(Boolean).join(' '); }
+function fromOpenAlex(w) {
+  const ax = arxivIdOf(w); const pl = w.primary_location || {};
+  const doi = String(w.doi || '').replace(/^https?:\/\/(dx\.)?doi\.org\//i, '');
+  const src = (pl.source && pl.source.display_name) || '';
+  const anyPdf = ((w.locations || []).find(l => l && safeUrl(l.pdf_url)) || {}).pdf_url;
+  return {
+    title: String(w.display_name || '').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim(),
+    authors: (w.authorships || []).map(a => (a.author && a.author.display_name) || a.raw_author_name).filter(Boolean),
+    year: (ax && arxivYear(ax)) || w.publication_year || null,
+    venue: /arxiv/i.test(src) ? '' : src,
+    kind: w.type === 'book' ? 'book' : 'paper',
+    url: ax ? 'https://arxiv.org/abs/' + ax : safeUrl(pl.landing_page_url) || (doi ? 'https://doi.org/' + doi : ''),
+    pdf: ax ? 'https://arxiv.org/pdf/' + ax : safeUrl(pl.pdf_url) || safeUrl(anyPdf),
+    arxiv: ax, doi: /^10\.48550\//.test(doi) ? '' : doi,
+    abstract: unInvert(w.abstract_inverted_index),
+  };
+}
+const idLookupUrl = info => OA + '/doi:' + (info.arxiv ? '10.48550/arXiv.' + info.arxiv : info.doi) + '?select=' + OA_FIELDS;
+const foundKey = x => x.arxiv ? 'ax:' + x.arxiv.toLowerCase() : x.doi ? 'doi:' + x.doi.toLowerCase() : 'u:' + x.url;
+const findSaved = x => state.papers.find(p => (x.arxiv && String(p.arxiv || '').toLowerCase() === x.arxiv.toLowerCase()) || (x.doi && String(p.doi || '').toLowerCase() === x.doi.toLowerCase()) || (x.url && p.url === x.url));
+function finderUrl(f) {
+  const q = f.q.trim(); const clean = q.replace(/[,|:]/g, ' ');
+  const p = new URLSearchParams({ select: OA_FIELDS, 'per-page': '20', page: String(f.page) }); const filters = [];
+  if (f.field === 'title') filters.push('title.search:' + clean);
+  else if (f.field === 'author') filters.push('raw_author_name.search:' + clean);
+  else p.set('search', q);
+  if (f.src === 'arxiv') filters.push('locations.source.id:' + OA_ARXIV);
+  if (filters.length) p.set('filter', filters.join(','));
+  if (f.sort === 'new') p.set('sort', 'publication_date:desc');
+  return OA + '?' + p;
+}
+async function runFind(more) {
+  const f = finder; if (!f.q.trim()) return;
+  if (more) f.page++; else { f.page = 1; f.results = []; f.total = 0; f.done = false; }
+  const seq = ++f.seq; f.busy = true; f.err = ''; renderFinder();
+  try {
+    const info = parseLink(f.q); let works = [], total = 0;
+    if (info && (info.arxiv || info.doi)) {
+      const r = await fetch(idLookupUrl(info));
+      if (r.ok) { works = [await r.json()]; total = 1; } else if (r.status !== 404) throw r;
+    } else {
+      const r = await fetch(finderUrl(f)); if (!r.ok) throw r;
+      const d = await r.json(); works = d.results || []; total = (d.meta && d.meta.count) || 0;
+    }
+    if (seq !== f.seq) return;
+    const seen = new Set(f.results.map(foundKey));
+    works.map(fromOpenAlex).filter(x => x.title).forEach(x => { const k = foundKey(x); if (!seen.has(k)) { seen.add(k); f.results.push(x); } });
+    f.total = total; f.done = true;
+  } catch (e) {
+    if (seq !== f.seq) return;
+    if (more) f.page--;
+    f.err = e && e.status === 429 ? 'The search service’s free daily limit is used up for your network. Try again later, or add the paper by hand.' : 'Couldn’t reach the search service. Check your connection and try again.';
+  }
+  f.busy = false; renderFinder();
+}
+function openFinder(lid) {
+  closePopover(); if (state.openId) closeDrawer();
+  const t = lid !== undefined ? lid : (state.list || finder.target);
+  finder.target = t && listById(t) ? t : ''; finder.newlist = false;
+  const radio = (attr, cur, opts) => opts.map(([v, l]) => `<button type="button" data-${attr}="${v}" aria-pressed="${cur === v}">${l}</button>`).join('');
+  showModal(`<div class="sheet wide" role="dialog" aria-labelledby="fx-t">
+    <h3 id="fx-t">Find papers</h3>
+    <p class="sub">Search arXiv by topic, title, author or ID, then save a result straight into a list.</p>
+    <form class="fxbar" id="fx-form" novalidate>
+      <div class="search"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="fx-q" type="search" value="${esc(finder.q)}" placeholder="looped transformers, Vaswani, or 1706.03762" aria-label="Search papers" autocomplete="off"></div>
+      <button class="btn primary" type="submit">Search</button>
+    </form>
+    <div class="fxopts">
+      <div class="radios" role="group" aria-label="Search in">${radio('fxfield', finder.field, [['all', 'Anywhere'], ['title', 'Title'], ['author', 'Author']])}</div>
+      <div class="radios" role="group" aria-label="Source">${radio('fxsrc', finder.src, [['arxiv', 'arXiv only'], ['any', 'All sources']])}</div>
+      <select class="sel" id="fx-sort" aria-label="Sort results"><option value="rel">Best match</option><option value="new">Newest first</option></select>
+    </div>
+    <div class="fxsave">
+      <label for="fx-target">Save into</label><select class="sel" id="fx-target"></select>
+      <form class="inline-new" id="fx-newlist" hidden><input id="fx-newlist-name" type="text" placeholder="New list name" aria-label="New list name"><button class="btn small primary" type="submit">Create</button></form>
+      <div class="radios" role="group" aria-label="Status when saved">${radio('fxstatus', finder.status, [['want', 'Want to read'], ['', 'No status'], ['done', 'Completed']])}</div>
+    </div>
+    <div class="fxres" id="fx-res" aria-live="polite"></div>
+    <div class="formacts"><button type="button" class="btn" data-close="1">Done</button></div>
+  </div>`, 'finder');
+  renderFinder();
+  if (finder.q.trim() && !finder.results.length && !finder.busy) runFind();
+  setTimeout(() => { const q = $('#fx-q'); if (q) { q.focus(); q.select(); } }, 30);
+}
+function renderFinder() {
+  if (modalKind !== 'finder') return;
+  const f = finder; if (f.target && !listById(f.target)) f.target = '';
+  const sel = $('#fx-target');
+  sel.innerHTML = '<option value="">No list (library only)</option>' + orderedLists().map(l => `<option value="${esc(l.id)}">${l.parent ? '   ' : ''}${esc(listPath(l))}</option>`).join('') + '<option value="__new">+ New list…</option>';
+  sel.value = f.target; $('#fx-newlist').hidden = !f.newlist;
+  [['fxfield', f.field], ['fxsrc', f.src], ['fxstatus', f.status]].forEach(([a, v]) => $$(`[data-${a}]`).forEach(b => b.setAttribute('aria-pressed', b.dataset[a] === v)));
+  $('#fx-sort').value = f.sort;
+  const box = $('#fx-res'); const tl = f.target ? listById(f.target) : null;
+  const manual = '<button type="button" data-fxmanual="1">add it by hand</button>';
+  if (f.err && !f.results.length) { box.innerHTML = `<p class="err">${esc(f.err)}</p>`; return; }
+  if (!f.results.length) {
+    if (f.busy) { box.innerHTML = '<div class="skel"></div>'.repeat(3); return; }
+    const info = parseLink(f.q);
+    box.innerHTML = `<p class="fxhint">${!f.done ? 'Results show up here. Papers you already have are marked, so you can add them to another list without making a copy.'
+      : info && info.arxiv ? `arXiv ${esc(info.arxiv)} isn’t in the search index yet (very new papers can take a few days). You can ${manual}.`
+      : `No papers matched. Try other words, switch to “All sources”, or ${manual}.`}</p>`;
+    return;
+  }
+  box.innerHTML = `<p class="fxcount">${f.total > f.results.length ? `${f.results.length} of ${f.total.toLocaleString()} results` : `${f.results.length} ${f.results.length === 1 ? 'result' : 'results'}`}</p>` +
+    f.results.map((x, i) => {
+      const have = findSaved(x); const link = safeUrl(x.url), pdf = safeUrl(x.pdf);
+      let acts;
+      if (!have) acts = `<button type="button" class="btn small primary" data-fxsave="${i}" title="${tl ? 'Save to ' + esc(listPath(tl)) : 'Save to your library'}">${ICON.plus} Save</button>`;
+      else if (tl && !inList(have, tl.id)) acts = `<button type="button" class="btn small primary" data-fxsave="${i}" title="Add to ${esc(listPath(tl))}">${ICON.plus} Add to list</button><span class="fxsaved muted">Already in library</span>`;
+      else acts = `<span class="fxsaved">✓ Saved${tl ? ' in ' + esc(tl.name) : ''}</span>`;
+      return `<article class="fxr ${have ? 'saved' : ''}">
+        <div class="fxr-main">
+          <div class="row-top"><span class="kind">${esc(x.arxiv ? 'arXiv ' + x.arxiv : KIND_LABEL[x.kind] || 'Paper')}</span>${x.year ? `<span class="key">${esc(x.year)}</span>` : ''}</div>
+          <h4 class="fxr-t">${link ? `<a href="${esc(link)}" target="_blank" rel="noopener noreferrer">${esc(x.title)}</a>` : esc(x.title)}</h4>
+          <p class="meta">${[esc(authorLine(x.authors, 4)), x.venue ? `<i>${esc(x.venue)}</i>` : ''].filter(Boolean).join(' · ')}</p>
+          ${x.abstract ? `<button type="button" class="fxabs" title="Show the full abstract">${esc(x.abstract)}</button>` : ''}
+        </div>
+        <div class="fxr-acts">${acts}<div class="row2">${have ? `<button type="button" class="btn small" data-fxopen="${esc(have.id)}">Open</button>` : ''}${pdf ? `<a class="iconbtn" href="${esc(pdf)}" target="_blank" rel="noopener noreferrer" title="PDF" aria-label="Open PDF">${ICON.pdf}</a>` : ''}</div></div>
+      </article>`;
+    }).join('') +
+    (f.err ? `<p class="err">${esc(f.err)}</p>` : '') +
+    (f.busy ? '<div class="skel"></div>' : f.page * 20 < f.total ? '<div class="formacts" style="justify-content:center;margin-top:6px"><button type="button" class="btn small" data-fxmore="1">Load more</button></div>' : '');
+}
+function saveFound(i) {
+  const x = finder.results[i]; if (!x) return;
+  const tl = finder.target ? listById(finder.target) : null; const have = findSaved(x);
+  if (have) { if (tl && toggleMember(have.id, tl.id, true)) toast(`Added to ${tl.name}`); renderFinder(); return; }
+  const now = Date.now(); const id = newId('p');
+  Store.set(id, { ...x, tags: [], lists: tl ? [tl.id] : [], notes: '', starred: false, status: finder.status, addedAt: now, readAt: finder.status === 'done' ? now : null });
+  toast(tl ? `Saved to ${tl.name}` : 'Saved to your stacks', 'Undo', () => { Store.remove(id); renderFinder(); });
+  renderFinder();
 }
 
 /* ---------- export / import ---------- */
@@ -1174,7 +1373,7 @@ async function importFile(file) {
   for (const raw of arr) {
     if (!raw || typeof raw !== 'object' || !raw.title) continue;
     if (raw.url && urls.has(raw.url)) continue;
-    const data = { title: String(raw.title), authors: Array.isArray(raw.authors) ? raw.authors.map(String) : [], year: raw.year || null, venue: raw.venue || '', kind: KIND_LABEL[raw.kind] ? raw.kind : 'paper', url: safeUrl(raw.url), pdf: safeUrl(raw.pdf), arxiv: raw.arxiv || '', doi: raw.doi || '', tags: Array.isArray(raw.tags) ? raw.tags.map(String) : [], lists: Array.isArray(raw.lists) ? raw.lists.map(x => idMap[x]).filter(Boolean) : [], notes: String(raw.notes || ''), starred: !!raw.starred, status: ['want','done'].includes(raw.status) ? raw.status : '', addedAt: raw.addedAt || Date.now(), readAt: raw.readAt || null };
+    const data = { title: String(raw.title), authors: Array.isArray(raw.authors) ? raw.authors.map(String) : [], year: raw.year || null, venue: raw.venue || '', kind: KIND_LABEL[raw.kind] ? raw.kind : 'paper', url: safeUrl(raw.url), pdf: safeUrl(raw.pdf), arxiv: raw.arxiv || '', doi: raw.doi || '', tags: Array.isArray(raw.tags) ? raw.tags.map(String) : [], lists: Array.isArray(raw.lists) ? raw.lists.map(x => idMap[x]).filter(Boolean) : [], notes: String(raw.notes || ''), abstract: String(raw.abstract || ''), starred: !!raw.starred, status: ['want','done'].includes(raw.status) ? raw.status : '', addedAt: raw.addedAt || Date.now(), readAt: raw.readAt || null };
     if (data.url) urls.add(data.url);
     Store.set(newId('p'), data); n++;
   }
@@ -1204,6 +1403,7 @@ document.addEventListener('click', e => {
   const el = t.closest('[data-editlist]'); if (el) return openListForm(el.dataset.editlist);
   const dl = t.closest('[data-dellist]'); if (dl) return deleteList(dl.dataset.dellist);
   const pk = t.closest('[data-pickfor]'); if (pk) return openPicker(pk.dataset.pickfor);
+  const fd = t.closest('[data-findfor]'); if (fd) return openFinder(fd.dataset.findfor);
   const ls = t.closest('[data-lstat]'); if (ls) { state.lstat = ls.dataset.lstat; state.cursor = -1; return renderAll(); }
   const tg = t.closest('#tagcloud [data-tag]'); if (tg) { state.tag = state.tag === tg.dataset.tag ? null : tg.dataset.tag; state.cursor = -1; return renderAll(); }
   const clr = t.closest('#head [data-clear], #list [data-clear]'); if (clr) return clearFilter(clr.dataset.clear);
@@ -1232,6 +1432,7 @@ $('#sort').addEventListener('change', e => { state.sort = e.target.value; savePr
 $('#v-list').onclick = () => { state.view = 'list'; savePrefs(); renderAll(); };
 $('#v-grid').onclick = () => { state.view = 'covers'; savePrefs(); renderAll(); };
 $('#add').onclick = () => openForm();
+$('#find').onclick = () => openFinder();
 $('#more').onclick = e => { e.stopPropagation(); const m = $('#menu'); renderMenu(); m.hidden = !m.hidden; $('#more').setAttribute('aria-expanded', !m.hidden); };
 $('#menu').addEventListener('click', e => {
   const b = e.target.closest('[data-m]'); if (!b) return; $('#menu').hidden = true;
@@ -1286,6 +1487,18 @@ $('#modal').addEventListener('click', e => {
   if (e.target.id === 'modal' || e.target.closest('[data-close]')) return closeModal();
   const pp = e.target.closest('[data-pp]');
   if (pp) { const lid = $('#pk-list').dataset.lid; toggleMember(pp.dataset.pp, lid); renderPicker(); return; }
+  if (modalKind === 'finder') {
+    const t = e.target; let b;
+    if ((b = t.closest('[data-fxsave]'))) return saveFound(+b.dataset.fxsave);
+    if ((b = t.closest('[data-fxopen]'))) { const id = b.dataset.fxopen; closeModal(); return openDrawer(id); }
+    if (t.closest('[data-fxmore]')) return runFind(true);
+    if (t.closest('[data-fxmanual]')) { const q = finder.q.trim(); closeModal(); return openForm(null, parseLink(q) ? q : undefined); }
+    if ((b = t.closest('.fxabs'))) { b.classList.toggle('open'); return; }
+    if ((b = t.closest('[data-fxstatus]'))) { finder.status = b.dataset.fxstatus; return renderFinder(); }
+    if ((b = t.closest('[data-fxfield]'))) { finder.field = b.dataset.fxfield; renderFinder(); return runFind(); }
+    if ((b = t.closest('[data-fxsrc]'))) { finder.src = b.dataset.fxsrc; renderFinder(); return runFind(); }
+    return;
+  }
   if (!form) return;
   const k = e.target.closest('[data-kind]'); if (k) { form.kind = k.dataset.kind; $$('#f-kind button').forEach(b => b.setAttribute('aria-pressed', b === k)); return; }
   const s = e.target.closest('[data-status]'); if (s) { form.status = s.dataset.status; $$('[data-status]').forEach(b => b.setAttribute('aria-pressed', b === s)); return; }
@@ -1305,7 +1518,21 @@ $('#modal').addEventListener('keydown', e => {
   else if (e.key === 'Enter') e.preventDefault();
   else if (e.key === 'Backspace' && !e.target.value && form.tags.length) { form.tags.pop(); renderTagbox(); $('#f-tag').focus(); }
 });
-$('#modal').addEventListener('submit', e => { if (e.target.id === 'pform') submitForm(e); });
+$('#modal').addEventListener('submit', e => {
+  if (e.target.id === 'pform') return submitForm(e);
+  if (e.target.id === 'fx-form') { e.preventDefault(); finder.q = $('#fx-q').value; return runFind(); }
+  if (e.target.id === 'fx-newlist') {
+    e.preventDefault(); const name = $('#fx-newlist-name').value.trim(); if (!name) return $('#fx-newlist-name').focus();
+    finder.target = createList(name, null) || ''; finder.newlist = false; toast(`Created “${name}”`); renderFinder();
+  }
+});
+$('#modal').addEventListener('change', e => {
+  if (e.target.id === 'fx-sort') { finder.sort = e.target.value; runFind(); }
+  else if (e.target.id === 'fx-target') {
+    if (e.target.value === '__new') { finder.newlist = true; renderFinder(); $('#fx-newlist-name').focus(); }
+    else { finder.target = e.target.value; finder.newlist = false; renderFinder(); }
+  }
+});
 
 /* keyboard */
 document.addEventListener('keydown', e => {
@@ -1322,6 +1549,7 @@ document.addEventListener('keydown', e => {
   const ids = state.ids || []; const curId = ids[state.cursor]; const k = e.key.toLowerCase();
   if (k === '/') { e.preventDefault(); $('#q').focus(); return; }
   if (k === 'n') { e.preventDefault(); openForm(); return; }
+  if (k === 'f') { e.preventDefault(); openFinder(); return; }
   if (state.openId) { if (k === 's') toggleStar(state.openId); else if (k === 'w') setStatus(state.openId, 'want'); else if (k === 'd') setStatus(state.openId, 'done'); return; }
   if (k === 'j' || e.key === 'ArrowDown' || e.key === 'ArrowRight') { if (!ids.length) return; e.preventDefault(); state.cursor = Math.min(ids.length - 1, state.cursor + 1); moveCursor(); }
   else if (k === 'k' || e.key === 'ArrowUp' || e.key === 'ArrowLeft') { if (!ids.length) return; e.preventDefault(); state.cursor = Math.max(0, state.cursor - 1); moveCursor(); }
